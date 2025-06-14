@@ -1,23 +1,18 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import ThreeDModelViewer from "./3DModelViewer";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ padding: "20px" }}>
+      <h2>3D Model Viewer</h2>
+      <ThreeDModelViewer
+        modelPath="/models/LivingRoom.ply"
+        secondaryModelPath="/models/Patchwork chair.ply"
+        orientation="x,z"
+        secondaryOrientation="x,y,-z"
+        width={800}
+        height={600}
+      />
     </div>
   );
 }
