@@ -10,6 +10,7 @@ const DualModelViewer = ({
   chairOrientation = "z", // Orientation for the chair
   roomScale = 1, // Scale factor for the room (can be number or {x, y, z} object)
   chairScale = 1, // Scale factor for the chair (can be number or {x, y, z} object)
+  backgroundColor = 0xf0f0f0, // Background color (default light gray)
   width = window.innerWidth,
   height = window.innerHeight,
 }) => {
@@ -78,8 +79,17 @@ const DualModelViewer = ({
   // Function to create material based on geometry properties
   const createMaterial = (geometry, modelPath, isRoom = false) => {
     const hasColor = geometry.hasAttribute("color");
-    let hasFaces = geometry.index !== null && geometry.index.count > 0;
+    // Better detection for mesh vs point cloud
+    const hasFaces = geometry.index !== null && geometry.index.count > 0;
+    const hasNormals = geometry.hasAttribute("normal");
 
+    console.log(`Model ${modelPath}:`, {
+      hasIndex: geometry.index !== null,
+      indexCount: geometry.index ? geometry.index.count : 0,
+      hasNormals: hasNormals,
+      hasColor: hasColor,
+      vertexCount: geometry.attributes.position.count,
+    });
 
     // Handle color normalization
     if (hasColor) {
@@ -136,18 +146,20 @@ const DualModelViewer = ({
       return new THREE.PointsMaterial({
         size: 2,
         vertexColors: hasColor,
-        color: hasColor ? 0xffffff : 0x808080,
+        color: hasColor ? 0x808080 : 0x808080,
       });
     }
   };
 
   // Function to create mesh from geometry
-  const createMesh = (geometry, material) => {
+  const createMesh = (geometry, material, forceMesh = true) => {
+    // Force mesh rendering unless explicitly creating point cloud
     const hasFaces = geometry.index !== null && geometry.index.count > 0;
 
-    if (hasFaces) {
+    if (forceMesh || hasFaces) {
       // Compute normals for proper lighting if they don't exist
       if (!geometry.hasAttribute("normal")) {
+        console.log("Computing vertex normals...");
         geometry.computeVertexNormals();
       }
       return new THREE.Mesh(geometry, material);
@@ -160,7 +172,7 @@ const DualModelViewer = ({
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(backgroundColor);
     scene.add(new THREE.AxesHelper(30));
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.01, 2000);
@@ -173,6 +185,13 @@ const DualModelViewer = ({
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // Smooth camera controls
+    controls.dampingFactor = 0.05;
+    controls.enableZoom = true;
+    controls.enablePan = true;
+    controls.enableRotate = true;
+    // Set control target to center of scene, not following any object
+    controls.target.set(0, 0, 0);
     controls.update();
 
     // Lighting setup
@@ -201,7 +220,7 @@ const DualModelViewer = ({
         console.log("Room model loaded");
 
         const material = createMaterial(geometry, roomModelPath, true);
-        const mesh = createMesh(geometry, material);
+        const mesh = createMesh(geometry, material, true); // Force mesh rendering
 
         // Apply orientation to room
         applyOrientation(mesh, roomOrientation);
@@ -212,7 +231,7 @@ const DualModelViewer = ({
         scene.add(mesh);
       },
       (xhr) => {
-        console.log("Room: " + (xhr.loaded / xhr.total) * 100 + "% loaded");
+        // console.log("Room: " + (xhr.loaded / xhr.total) * 100 + "% loaded");
       },
       (error) => {
         console.error("Error loading room model:", error);
@@ -227,7 +246,7 @@ const DualModelViewer = ({
         console.log("Chair model loaded");
 
         const material = createMaterial(geometry, chairModelPath, false);
-        const mesh = createMesh(geometry, material);
+        const mesh = createMesh(geometry, material, true); // Force mesh rendering
 
         // Apply orientation to chair
         applyOrientation(mesh, chairOrientation);
@@ -239,7 +258,7 @@ const DualModelViewer = ({
         chairGroup.add(mesh);
       },
       (xhr) => {
-        console.log("Chair: " + (xhr.loaded / xhr.total) * 100 + "% loaded");
+        // console.log("Chair: " + (xhr.loaded / xhr.total) * 100 + "% loaded");
       },
       (error) => {
         console.error("Error loading chair model:", error);
@@ -251,13 +270,15 @@ const DualModelViewer = ({
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      // Optional: Add automatic rotation to the chair
-      // if (chairGroupRef.current) {
-      //   chairGroupRef.current.rotation.y += 0.005;
-      // }
+      // Update controls with damping
+      controls.update();
+
+      //   Optional: Add automatic rotation to the chair only
+      //   if (chairGroupRef.current) {
+      //     chairGroupRef.current.rotation.y += 0.005;
+      //   }
 
       renderer.render(scene, camera);
-      controls.update();
     };
     animate();
 
@@ -278,6 +299,7 @@ const DualModelViewer = ({
     chairOrientation,
     roomScale,
     chairScale,
+    backgroundColor,
     width,
     height,
   ]);
@@ -313,8 +335,9 @@ const RoomChairViewer = () => {
       chairModelPath="./models/PatchWorkChair.ply"
       roomOrientation="z" // Orientation for the room
       chairOrientation="z" // Orientation for the chair
-      roomScale={1} // Scale down the room to 80%
-      chairScale={1} // Scale up the chair to 120%
+      roomScale={0.8} // Scale down the room to 80%
+      chairScale={1.2} // Scale up the chair to 120%
+      backgroundColor={0x000000} // Black background
       width={800}
       height={600}
     />

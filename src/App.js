@@ -25,6 +25,7 @@ function App() {
         height={600}
         roomScale={5.8} // Scale down the room to 80%
         chairScale={0.5} // Scale up the chair to 120%
+        backgroundColor={0x000000} // Black background
       />
     </div>
   );
