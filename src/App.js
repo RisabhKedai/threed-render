@@ -19,7 +19,7 @@ function App() {
       <DualModelViewer
         roomModelPath="./models/LivingRoom.ply"
         chairModelPath="/models/Patchwork%20chair.ply"
-        roomOrientation="x,z" // Orientation for the room
+        roomOrientation="x,y,z" // Orientation for the room
         chairOrientation="x,y,-z" // Only affects the chair
         width={800}
         height={600}

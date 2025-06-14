@@ -184,7 +184,10 @@ const DualModelViewer = ({
     scene.add(new THREE.AxesHelper(30));
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.01, 2000);
-    camera.position.set(100, 800, 2000);
+    // Updated camera position to (800, 800, 800)
+    camera.position.set(800, 800, 800);
+    // Make camera look at the center (0, 0, 0)
+    camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -399,7 +402,7 @@ const DualModelViewer = ({
           fontSize: "12px",
         }}
       >
-        <div>Camera: Fixed position - no movement</div>
+        <div>Camera: Fixed at position (800, 800, 800) looking at center</div>
         <div>Mouse: Click and drag to rotate chair only</div>
         <div>Room: Fixed background environment</div>
       </div>
