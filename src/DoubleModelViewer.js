@@ -79,16 +79,22 @@ const DualModelViewer = ({
   // Function to create material based on geometry properties
   const createMaterial = (geometry, modelPath, isRoom = false) => {
     const hasColor = geometry.hasAttribute("color");
-    // Better detection for mesh vs point cloud
-    const hasFaces = geometry.index !== null && geometry.index.count > 0;
+    const hasIndex = geometry.index !== null && geometry.index.count > 0;
     const hasNormals = geometry.hasAttribute("normal");
+    const vertexCount = geometry.attributes.position
+      ? geometry.attributes.position.count
+      : 0;
+    const hasTriangles = !hasIndex && vertexCount % 3 === 0 && vertexCount > 0;
+    const canRenderAsMesh = hasIndex || hasTriangles;
 
-    console.log(`Model ${modelPath}:`, {
-      hasIndex: geometry.index !== null,
+    console.log(`Material creation for ${modelPath}:`, {
+      hasIndex: hasIndex,
       indexCount: geometry.index ? geometry.index.count : 0,
       hasNormals: hasNormals,
       hasColor: hasColor,
-      vertexCount: geometry.attributes.position.count,
+      vertexCount: vertexCount,
+      hasTriangles: hasTriangles,
+      canRenderAsMesh: canRenderAsMesh,
     });
 
     // Handle color normalization
@@ -111,7 +117,7 @@ const DualModelViewer = ({
       }
     }
 
-    if (hasFaces) {
+    if (canRenderAsMesh) {
       // Mesh material
       if (hasColor) {
         return new THREE.MeshStandardMaterial({
@@ -119,6 +125,7 @@ const DualModelViewer = ({
           metalness: isRoom ? 0.2 : 0.0,
           roughness: isRoom ? 0.8 : 1.0,
           color: 0xffffff,
+          side: THREE.DoubleSide, // Important for non-indexed geometries
         });
       } else {
         // Try to load texture
@@ -139,6 +146,7 @@ const DualModelViewer = ({
           map: texture,
           metalness: 0.1,
           roughness: 0.8,
+          side: THREE.DoubleSide, // Important for non-indexed geometries
         });
       }
     } else {
@@ -146,7 +154,7 @@ const DualModelViewer = ({
       return new THREE.PointsMaterial({
         size: 2,
         vertexColors: hasColor,
-        color: hasColor ? 0x808080 : 0x808080,
+        color: hasColor ? 0xffffff : 0x808080,
       });
     }
   };
@@ -228,6 +236,26 @@ const DualModelViewer = ({
         // Apply scale to room
         applyScale(mesh, roomScale);
 
+        // Add frustum culling and LOD to handle large geometry
+        mesh.frustumCulled = true;
+
+        // For very large models, reduce opacity slightly when far away
+        const originalMaterial = mesh.material;
+        const checkDistance = () => {
+          const distance = camera.position.distanceTo(mesh.position);
+          if (distance > 800) {
+            // When zoomed out, make room slightly transparent
+            originalMaterial.transparent = true;
+            originalMaterial.opacity = 0.8;
+          } else {
+            originalMaterial.transparent = false;
+            originalMaterial.opacity = 1.0;
+          }
+        };
+
+        // Store the distance check function for animation loop
+        mesh.userData.checkDistance = checkDistance;
+
         scene.add(mesh);
       },
       (xhr) => {
@@ -254,6 +282,8 @@ const DualModelViewer = ({
         // Apply scale to chair
         applyScale(mesh, chairScale);
 
+        // Keep chair at center position (no position offset)
+
         // Add chair to the controllable group
         chairGroup.add(mesh);
       },
@@ -272,6 +302,13 @@ const DualModelViewer = ({
 
       // Update controls with damping
       controls.update();
+
+      // Check distance-based transparency for room
+      scene.traverse((object) => {
+        if (object.userData.checkDistance) {
+          object.userData.checkDistance();
+        }
+      });
 
       //   Optional: Add automatic rotation to the chair only
       //   if (chairGroupRef.current) {
@@ -324,23 +361,6 @@ const DualModelViewer = ({
         <div>Chair: Centered, controllable with custom scale</div>
       </div>
     </div>
-  );
-};
-
-// Example usage component
-const RoomChairViewer = () => {
-  return (
-    <DualModelViewer
-      roomModelPath="./models/LivingRoom.ply"
-      chairModelPath="./models/PatchWorkChair.ply"
-      roomOrientation="z" // Orientation for the room
-      chairOrientation="z" // Orientation for the chair
-      roomScale={0.8} // Scale down the room to 80%
-      chairScale={1.2} // Scale up the chair to 120%
-      backgroundColor={0x000000} // Black background
-      width={800}
-      height={600}
-    />
   );
 };
 
