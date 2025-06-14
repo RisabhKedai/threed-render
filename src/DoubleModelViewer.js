@@ -198,14 +198,17 @@ const DualModelViewer = ({
     // DISABLE OrbitControls - camera will be fixed
     // const controls = new OrbitControls(camera, renderer.domElement);
 
-    // Custom mouse controls for chair rotation only (lateral rotation only)
+    // Custom mouse controls for chair rotation only
     let isMouseDown = false;
     let mouseX = 0;
+    let mouseY = 0;
+    let chairRotationX = 0;
     let chairRotationY = 0;
 
     const handleMouseDown = (event) => {
       isMouseDown = true;
       mouseX = event.clientX;
+      mouseY = event.clientY;
     };
 
     const handleMouseUp = () => {
@@ -216,16 +219,18 @@ const DualModelViewer = ({
       if (!isMouseDown || !chairGroupRef.current) return;
 
       const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
 
-      // Update chair rotation based on horizontal mouse movement only
-      chairRotationY += deltaX * 0.01; // Horizontal mouse = Y rotation (lateral)
+      // Update chair rotation based on mouse movement
+      chairRotationY += deltaX * 0.01; // Horizontal mouse = Y rotation
+      chairRotationX += deltaY * 0.01; // Vertical mouse = X rotation
 
-      // Apply only Y-axis rotation to chair group (no X or Z rotation)
+      // Apply rotation to chair group
       chairGroupRef.current.rotation.y = chairRotationY;
-      chairGroupRef.current.rotation.x = 0; // Keep X rotation at 0
-      chairGroupRef.current.rotation.z = 0; // Keep Z rotation at 0
+      chairGroupRef.current.rotation.x = chairRotationX;
 
       mouseX = event.clientX;
+      mouseY = event.clientY;
     };
 
     // Add event listeners
@@ -397,12 +402,8 @@ const DualModelViewer = ({
           fontSize: "12px",
         }}
       >
-        <div>
-          Camera: Fixed at position (1500, 1500, 1500) looking at center
-        </div>
-        <div>
-          Mouse: Click and drag horizontally to rotate chair laterally only
-        </div>
+        <div>Camera: Fixed at position (800, 800, 800) looking at center</div>
+        <div>Mouse: Click and drag to rotate chair only</div>
         <div>Room: Fixed background environment</div>
       </div>
     </div>
