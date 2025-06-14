@@ -185,7 +185,7 @@ const DualModelViewer = ({
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.01, 2000);
     // Updated camera position to (800, 800, 800)
-    camera.position.set(800, 800, 800);
+    camera.position.set(1000, 1000, 1000);
     // Make camera look at the center (0, 0, 0)
     camera.lookAt(0, 0, 0);
 
@@ -306,7 +306,7 @@ const DualModelViewer = ({
         console.log("Chair model loaded");
 
         const material = createMaterial(geometry, chairModelPath, false);
-        const mesh = createMesh(geometry, material, true); // Force mesh rendering
+        const mesh = createMesh(geometry, material, false); // Force mesh rendering
 
         // Apply orientation to chair
         applyOrientation(mesh, chairOrientation);
@@ -397,8 +397,12 @@ const DualModelViewer = ({
           fontSize: "12px",
         }}
       >
-        <div>Camera: Fixed at position (800, 800, 800) looking at center</div>
-        <div>Mouse: Click and drag horizontally to rotate chair laterally only</div>
+        <div>
+          Camera: Fixed at position (1500, 1500, 1500) looking at center
+        </div>
+        <div>
+          Mouse: Click and drag horizontally to rotate chair laterally only
+        </div>
         <div>Room: Fixed background environment</div>
       </div>
     </div>
