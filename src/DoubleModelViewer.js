@@ -10,6 +10,7 @@ const DualModelViewer = ({
   chairOrientation = "z", // Orientation for the chair
   roomScale = 1, // Scale factor for the room (can be number or {x, y, z} object)
   chairScale = 1, // Scale factor for the chair (can be number or {x, y, z} object)
+  chairPosition = { x: 0, y: 0, z: 0 }, // Initial position for the chair
   backgroundColor = 0xf0f0f0, // Background color (default light gray)
   width = window.innerWidth,
   height = window.innerHeight,
@@ -249,7 +250,12 @@ const DualModelViewer = ({
 
     // Create a group for the chair that can be controlled independently
     const chairGroup = new THREE.Group();
-    chairGroup.position.set(0, 0, 0); // Center position
+    // Set initial position from props
+    chairGroup.position.set(
+      chairPosition.x || 0,
+      chairPosition.y || 0,
+      chairPosition.z || 0
+    );
     scene.add(chairGroup);
     chairGroupRef.current = chairGroup;
 
@@ -265,7 +271,7 @@ const DualModelViewer = ({
         console.log("Room model loaded");
 
         const material = createMaterial(geometry, roomModelPath, true);
-        const mesh = createMesh(geometry, material, true); // Force mesh rendering
+        const mesh = createMesh(geometry, material, false); // Force mesh rendering
 
         // Apply orientation to room
         applyOrientation(mesh, roomOrientation);
@@ -319,9 +325,7 @@ const DualModelViewer = ({
         // Apply scale to chair
         applyScale(mesh, chairScale);
 
-        // Keep chair at center position (no position offset)
-
-        // Add chair to the controllable group
+        // Add chair to the controllable group (position is set on the group above)
         chairGroup.add(mesh);
       },
       (xhr) => {
@@ -382,6 +386,7 @@ const DualModelViewer = ({
     chairOrientation,
     roomScale,
     chairScale,
+    chairPosition, // Add chairPosition to dependencies
     backgroundColor,
     width,
     height,
@@ -405,6 +410,10 @@ const DualModelViewer = ({
         <div>Camera: Fixed at position (800, 800, 800) looking at center</div>
         <div>Mouse: Click and drag to rotate chair only</div>
         <div>Room: Fixed background environment</div>
+        <div>
+          Chair Position: ({chairPosition.x}, {chairPosition.y},{" "}
+          {chairPosition.z})
+        </div>
       </div>
     </div>
   );

@@ -19,15 +19,16 @@ function App() {
       /> */}
 
       <DualModelViewer
-        roomModelPath="./models/LivingRoom.ply"
-        chairModelPath="./models/DownSizedX3.ply"
+        roomModelPath="./models/Background.ply"
+        chairModelPath="./models/ModelX7.ply"
         roomOrientation="x,y,z" // Orientation for the room
         // chairOrientation="x,y,-z" // Only affects the chair
         width={800}
         height={600}
-        roomScale={4.8} // Scale down the room to 80%
-        chairScale={300000} // Scale up the chair to 120%
+        roomScale={100000} // Scale down the room to 80%
+        chairScale={100000} // Scale up the chair to 120%
         backgroundColor={0x000000} // Black background
+        chairPosition={{ x: 10, y: 50, z: 20 }}
       />
     </div>
   );
