@@ -184,7 +184,7 @@ const DualModelViewer = ({
     scene.add(new THREE.AxesHelper(30));
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.01, 2000);
-    camera.position.set(0, 9, 1500);
+    camera.position.set(100, 800, 2000);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -192,15 +192,49 @@ const DualModelViewer = ({
     THREE.ColorManagement.enabled = true;
     containerRef.current.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // Smooth camera controls
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
-    controls.enablePan = true;
-    controls.enableRotate = true;
-    // Set control target to center of scene, not following any object
-    controls.target.set(0, 0, 0);
-    controls.update();
+    // DISABLE OrbitControls - camera will be fixed
+    // const controls = new OrbitControls(camera, renderer.domElement);
+
+    // Custom mouse controls for chair rotation only
+    let isMouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
+    let chairRotationX = 0;
+    let chairRotationY = 0;
+
+    const handleMouseDown = (event) => {
+      isMouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    const handleMouseUp = () => {
+      isMouseDown = false;
+    };
+
+    const handleMouseMove = (event) => {
+      if (!isMouseDown || !chairGroupRef.current) return;
+
+      const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
+
+      // Update chair rotation based on mouse movement
+      chairRotationY += deltaX * 0.01; // Horizontal mouse = Y rotation
+      chairRotationX += deltaY * 0.01; // Vertical mouse = X rotation
+
+      // Apply rotation to chair group
+      chairGroupRef.current.rotation.y = chairRotationY;
+      chairGroupRef.current.rotation.x = chairRotationX;
+
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    // Add event listeners
+    renderer.domElement.addEventListener("mousedown", handleMouseDown);
+    renderer.domElement.addEventListener("mouseup", handleMouseUp);
+    renderer.domElement.addEventListener("mousemove", handleMouseMove);
+    renderer.domElement.addEventListener("mouseleave", handleMouseUp); // Stop rotation when mouse leaves
 
     // Lighting setup
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
@@ -300,13 +334,13 @@ const DualModelViewer = ({
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      // Update controls with damping
-      controls.update();
+      // No need to update controls since camera is fixed
+      // controls.update();
 
-      // Check distance-based transparency for room
+      // Check visibility optimization for massive room geometry
       scene.traverse((object) => {
-        if (object.userData.checkDistance) {
-          object.userData.checkDistance();
+        if (object.userData.checkVisibility) {
+          object.userData.checkVisibility();
         }
       });
 
@@ -322,6 +356,15 @@ const DualModelViewer = ({
     // Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
+
+      // Remove event listeners
+      if (renderer.domElement) {
+        renderer.domElement.removeEventListener("mousedown", handleMouseDown);
+        renderer.domElement.removeEventListener("mouseup", handleMouseUp);
+        renderer.domElement.removeEventListener("mousemove", handleMouseMove);
+        renderer.domElement.removeEventListener("mouseleave", handleMouseUp);
+      }
+
       if (containerRef.current && renderer.domElement.parentNode) {
         containerRef.current.removeChild(renderer.domElement);
       }
@@ -356,9 +399,9 @@ const DualModelViewer = ({
           fontSize: "12px",
         }}
       >
-        <div>Camera Controls: Mouse to orbit, scroll to zoom</div>
-        <div>Room: Fixed with custom orientation and scale</div>
-        <div>Chair: Centered, controllable with custom scale</div>
+        <div>Camera: Fixed position - no movement</div>
+        <div>Mouse: Click and drag to rotate chair only</div>
+        <div>Room: Fixed background environment</div>
       </div>
     </div>
   );
