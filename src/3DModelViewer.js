@@ -6,6 +6,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 const ThreeDModelViewer = ({
   modelPath,
   orientation = "z", // Default orientation - accepts single or comma-separated rotations
+  scale = 1.0, // Uniform scale factor (default: 1.0 = original size)
   width = window.innerWidth,
   height = window.innerHeight,
 }) => {
@@ -74,10 +75,26 @@ const ThreeDModelViewer = ({
     });
   };
 
+  // Function to apply uniform scaling
+  const applyScale = (mesh, scaleFactor) => {
+    console.log("📏 Applying uniform scale...");
+    console.log("📊 Scale factor:", scaleFactor);
+
+    // Apply uniform scaling to all axes
+    mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+    console.log("✅ Scale applied - final mesh scale:", {
+      x: mesh.scale.x,
+      y: mesh.scale.y,
+      z: mesh.scale.z,
+    });
+  };
+
   useEffect(() => {
     console.log("🚀 Starting ThreeDModelViewer initialization...");
     console.log("📁 Model path:", modelPath);
     console.log("🎯 Orientation:", orientation);
+    console.log("📏 Scale factor:", scale);
     console.log("📐 Dimensions:", { width, height });
 
     if (!containerRef.current) {
@@ -89,7 +106,7 @@ const ThreeDModelViewer = ({
     // Initialize scene
     console.log("🌍 Creating THREE.js scene...");
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0); // Light gray background
+    scene.background = new THREE.Color(0x00000); // Light gray background
     console.log("✅ Scene created with light gray background");
 
     // Add axes helper for debugging
@@ -159,7 +176,8 @@ const ThreeDModelViewer = ({
       const vertexCount = geometry.attributes.position
         ? geometry.attributes.position.count
         : 0;
-      const hasFaces = geometry.index !== null && geometry.index.count > 0;
+      const hasFaces = false;
+      // geometry.index !== null && geometry.index.count > 0;
       const hasColor = geometry.hasAttribute("color");
       const hasNormals = geometry.hasAttribute("normal");
       const hasUV = geometry.hasAttribute("uv");
@@ -338,6 +356,10 @@ const ThreeDModelViewer = ({
       console.log("🎯 Applying orientation transformations...");
       applyOrientation(mesh, orientation);
 
+      // Apply the uniform scale
+      console.log("📏 Applying scale transformations...");
+      applyScale(mesh, scale);
+
       // Add mesh to scene
       console.log("🌍 Adding mesh to scene...");
       scene.add(mesh);
@@ -437,7 +459,7 @@ const ThreeDModelViewer = ({
 
       console.log("🏁 Cleanup completed");
     };
-  }, [modelPath, orientation, width, height]);
+  }, [modelPath, orientation, scale, width, height]);
 
   return <div ref={containerRef} style={{ width, height }} />;
 };

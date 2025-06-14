@@ -7,18 +7,20 @@ function App() {
     <div style={{ padding: "20px" }}>
       <h2>3D Model Viewer</h2>
       <ThreeDModelViewer
-        modelPath="/models/Patchwork%20chair.ply"
+        // modelPath="/models/Patchwork%20Chair.ply"
         // orientation="x,y,-z"
         // modelPath="./models/RisabhKedia.ply"
-        orientation="x,-z"
-        scenePath="/models/Scene.ply"
+        modelPath="./models/DownSized.ply"
+        orientation=""
+        // scenePath="/models/Scene.ply"
         width={800}
         height={600}
+        scale={100000}
       />
 
       {/* <DualModelViewer
-        roomModelPath="./models/LivingRoom.ply"
-        chairModelPath="./models/RisabhKedia.ply"
+        roomModelPath="./models/Li3vingRoom.ply"
+        chairModelPath="./models/DownSized.ply"
         roomOrientation="x,y,z" // Orientation for the room
         chairOrientation="x,y,-z" // Only affects the chair
         width={800}
