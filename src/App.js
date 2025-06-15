@@ -7,17 +7,17 @@ function App() {
   return (
     <div style={{ padding: "20px" }}>
       <h2>3D Model Viewer</h2>
-      {/* <ThreeDModelViewer
+      <ThreeDModelViewer
         // modelPath="/models/Patchwork%20Chair.ply"
         // orientation="x,y,-z"
         // modelPath="./models/RisabhKedia.ply"
-        modelPath="./models/Final2Background.ply"
+        modelPath="./models/merged_scene.ply"
         orientation=""
         // scenePath="/models/Scene.ply"
         width={800}
         height={600}
         scale={100000}
-      /> */}
+      />
 
       {/* <DualModelViewer
         // roomModelPath="./models/Final2Background.ply"
@@ -32,7 +32,7 @@ function App() {
         chairPosition={{ x: 10, y: 50, z: 20 }}
       /> */}
 
-      <DualModelViewerV2
+      {/* <DualModelViewerV2
         roomModelPath="./models/Final2Background.ply"
         chairModelPath="./models/Final1Risabh.ply"
         // roomOrientation="x,y,z" // Orientation for the room
@@ -43,7 +43,7 @@ function App() {
         chairScale={90000} // Scale up the chair to 120%
         backgroundColor={0x000000} // Black background
         chairPosition={{ x: 0, y: 0, z: 80 }}
-      />
+      /> */}
     </div>
   );
 }
